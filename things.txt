@@ -1,0 +1,165 @@
+#-----------------------------------FUNCOES-----------------------------------
+(defun TentaAdicionar (a b)
+	(if (or (null a) (null b))
+		nil
+		(+ a b)
+	)
+) 	
+
+(defun EncontraAluno (lista nome)
+	(if (null (car lista))
+		nil
+		(if (eql (car lista) nome)
+			0
+			(TentaAdicionar 1 (EncontraAluno (cdr lista) nome))
+		)
+	)
+)
+
+(defun EncontraDisc (lista nome)
+	(if (null (car lista))
+		nil
+		(if (eql (car lista) nome)
+			0
+			(TentaAdicionar 1 (EncontraDisc (cdr lista) nome))
+		)
+	)
+)
+
+(defun EncontraProf (lista nome)
+	(if (null (car lista))
+		nil
+		(if (eql (car lista) nome)
+			0
+			(TentaAdicionar 1 (EncontraProf (cdr lista) nome))
+		)
+	)
+)
+
+(defun FazNVezes (func lista n)
+	(if (= n 0)
+		lista
+		(FazNVezes func (funcall func lista) (- n 1))
+	)
+)
+
+(defun CopiaExcluindo (lista nome)
+	(if (null (car lista))
+		(cons nil nil)
+		(if (not (eql (car lista) nome))
+			(cons (car lista) (copiaexcluindo (cdr lista) nome))
+			(if (null (cadr lista))
+				(cons nil nil)
+				(cons (cadr lista) (copiaexcluindo (cddr lista) nome))
+			)
+		)
+	)
+)
+
+(defun Existe? (lista nome)
+	(if (eql (car lista) nome)
+		t
+		(if (null (car lista))
+			nil
+			(existe? (cdr lista) nome)
+		)
+	)
+)
+
+(defun AdicionaNoFinal (lista nome)
+	(if (null (car lista))
+		(cons nome (cons nil nil))
+		(cons (car lista) (AdicionaNoFinal (cdr lista) nome))
+	)
+)
+
+(defun AcessaNoGrafoAD (db linha coluna)
+	(car
+		(FazNVezes 
+			(function cdr)
+			(cdr
+				(FazNVezes 
+					(function car) 
+					(cdaaar db)
+					(EncontraAluno (cdr db) linha)
+				)
+			)
+			(EncontraDisc (cdar db) coluna)
+		)
+	)
+)
+
+(defun AcessaNoGrafoPD (db linha coluna)
+	(car
+		(FazNVezes 
+			(function cdr)
+			(FazNVezes 
+				(function car) 
+				(cdaaar db)
+				(EncontraProf (cdaar db) linha)
+			)
+			(EncontraDisc (cdar db) coluna)
+		)
+	)
+)
+
+(defun PegaListaAlunos (DB) (cdr DB))
+(defun PegaListaDiscs (DB) (cdr (car DB)))
+(defun PegaListaProfs (DB) (cdr (caar DB)))
+(defun PegaGrafoAD (DB) (cdr (caaar DB)))
+(defun PegaGrafoPD (DB) (cdr (caaaar DB)))
+
+#---------------------------------TESTES---------------------------------------
+(faznvezes 
+	(function cdr)
+	(cons 'a1 (cons 'a2 (cons 'a3 nil)))
+	(encontraaluno 
+		(cons 'a1 (cons 'a2 (cons 'a3 nil)))
+		'a3)
+)
+
+#----------------------------------VARS----------------------------------------
+teste
+(cons 'a1 (cons 'a2 (cons 'a3)))
+
+DB
+(cons 
+	(cons 
+		(cons 
+			(cons 
+				(cons 
+					nil 
+					(cons 
+						(cons
+							(cons
+								(cons
+									nil
+									'(0 0 0 0)
+								)
+								'(0 0 0 0)
+							)
+							'(0 0 0 0)
+						)
+						'(0 0 0 0)
+					)
+				)
+				(cons
+					(cons
+						(cons
+							(cons
+								nil
+								'(0 1 0 0)
+							)
+							'(0 0 0 0)
+						)
+						'(0 0 0 0)
+					)
+					'(0 0 0 0)
+				)
+			)
+			'(p1 p2 p3 p4 nil)
+		)
+		'(d1 d2 d3 d4 nil)
+	)
+	'(a1 a2 a3 a4 nil)
+)
