@@ -93,10 +93,12 @@
 	(car
 		(FazNVezes 
 			(function cdr)
-			(FazNVezes 
-				(function car) 
-				(cdaaar db)
-				(EncontraProf (cdaar db) linha)
+			(cdr
+				(FazNVezes 
+					(function car) 
+					(cdaaar db)
+					(EncontraProf (cdaar db) linha)
+				)
 			)
 			(EncontraDisc (cdar db) coluna)
 		)
