@@ -92,20 +92,41 @@
 		nil
 		(if (not (eql (car lista) nome))
 			(cons (car lista) (copiaexcluindo (cdr lista) nome))
-			(if (null (cadr lista))
-				nil
-				(cons (cadr lista) (copiaexcluindo (cddr lista) nome))
-			)
+			;(if (null (cadr lista))
+			;	nil
+			;	(cons (cadr lista) (copiaexcluindo (cddr lista) nome))
+			;)
+			(CopiaExcluindo (cdr lista) nome)
 		)
 	)
 )
 
-(defun Existe? (lista nome)
-	(if (eql (car lista) nome)
-		t
-		(if (null lista)
-			nil
-			(existe? (cdr lista) nome)
+(defun CopiaExcluindoMulti (ListaOriginal ListaASerRemovida)
+	(if (null ListaOriginal)
+		nil
+		(if (not (Existe? ListaASerRemovida (car ListaOriginal)))
+			(cons (car ListaOriginal) (CopiaExcluindoMulti (cdr ListaOriginal) ListaASerRemovida))
+			(CopiaExcluindoMulti (cdr ListaOriginal) ListaASerRemovida)
+		)
+	)
+)
+
+;(defun Existe? (lista nome)
+;	(if (eql (car lista) nome)
+;		t
+;		(if (null lista)
+;			nil
+;			(existe? (cdr lista) nome)
+;		)
+;	)
+;)
+
+(defun Existe? (lista valor)
+	(if (null lista)
+		nil
+		(if (eql (car lista) valor)
+			t
+			(Existe? (cdr lista) valor)
 		)
 	)
 )
@@ -151,7 +172,7 @@
 	)
 )
 
-(defun Matricula (db alunos disciplinas)
+(defun Matricular (alunos disciplinas bd)
 	(cons
 		(cons 
 			(cons
@@ -159,32 +180,32 @@
 					(cons
 						nil
 						(EffVincula
-							db
+							bd
 							'(nil)
 							disciplinas
-							(PegaListaProfs db)
-							(PegaListaProfs db)
+							(PegaListaProfs bd)
+							(PegaListaProfs bd)
 							;(cdaar db)
 							;(cdaar db)
-							(VerificaEAdiciona (PegaListaDiscs db) disciplinas (PegaListaDiscs db))
+							(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
 						)
 						;(cdr (caaaar db))
 					)
 					(EffMatricula
-						db 
+						bd
 						alunos
 						disciplinas 
-						(VerificaEAdiciona (PegaListaAlunos db) alunos (PegaListaAlunos db)) 
-						(VerificaEAdiciona (PegaListaAlunos db) alunos (PegaListaAlunos db)) 
-						(VerificaEAdiciona (PegaListaDiscs db) disciplinas (PegaListaDiscs db))
+						(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd)) 
+						(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd)) 
+						(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
 					)
 				)
-				(PegaListaProfs db)
+				(PegaListaProfs bd)
 				;(cdaar db)
 			)
-			(VerificaEAdiciona (PegaListaDiscs db) disciplinas (PegaListaDiscs db))
+			(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
 		)
-		(VerificaEAdiciona (PegaListaAlunos db) alunos (PegaListaAlunos db))
+		(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd))
 	)
 )
 
@@ -227,7 +248,7 @@
 	)
 )
 
-(defun Vincula (db professores disciplinas)
+(defun Vincular (professores disciplinas bd)
 	(cons
 		(cons 
 			(cons
@@ -236,30 +257,30 @@
 						nil
 						;(cdr (caaaar db))
 						(EffVincula
-							db 
+							bd
 							professores 
 							disciplinas 
-							(VerificaEAdiciona (PegaListaProfs db) professores (PegaListaProfs db)) 
-							(VerificaEAdiciona (PegaListaProfs db) professores (PegaListaProfs db)) 
-							(VerificaEAdiciona (PegaListaDiscs db) disciplinas (PegaListaDiscs db))
+							(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd)) 
+							(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd)) 
+							(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
 						)
 					)
 					(EffMatricula
-						db 
+						bd 
 						'(nil) 
 						disciplinas 
 						;(cdr db) 
-						(PegaListaAlunos db)
+						(PegaListaAlunos bd)
 						;(cdr db) 
-						(PegaListaAlunos db)
-						(VerificaEAdiciona (PegaListaDiscs db) disciplinas (PegaListaDiscs db))
+						(PegaListaAlunos bd)
+						(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
 					)
 				)
-				(VerificaEAdiciona (PegaListaProfs db) professores (PegaListaProfs db))
+				(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd))
 			)
-			(VerificaEAdiciona (PegaListaDiscs db) disciplinas (PegaListaDiscs db))
+			(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
 		)
-	(PegaListaAlunos db)
+	(PegaListaAlunos bd)
 	)
 )
 
@@ -312,6 +333,86 @@
 				(cons (car nomes) (VerificaEAdiciona lista (cdr nomes) antiga))
 				(VerificaEAdiciona lista (cdr nomes) antiga)
 			)
+		)
+	)
+)
+
+(defun Alunos? (bd)
+	(cdr bd)
+)
+
+(defun Professores? (bd)
+	(cdaar bd)
+)
+
+(defun Disciplinas? (bd)
+	(cdar bd)
+)
+
+(defun Matriculados? (disciplina bd)
+	(StepMatriculados bd (PegaListaAlunos bd) disciplina)
+)
+
+(defun StepMatriculados (db alunos disciplina)
+	(if (null alunos)
+		nil
+		(if (eq (AcessaNoGrafoAD db (car alunos) disciplina) 1)
+			(cons 
+				(car alunos)
+				(StepMatriculados db (cdr alunos) disciplina)
+			)
+			(StepMatriculados db (cdr alunos) disciplina) 
+		)
+	)
+)
+
+(defun Vinculados? (disciplina bd)
+	(StepVinculados bd (PegaListaProfs bd) disciplina)
+)
+
+(defun StepVinculados (db professores disciplina)
+	(if (null professores)
+		nil
+		(if (eq (AcessaNoGrafoPD db (car professores) disciplina) 1)
+			(cons
+				(car professores)
+				(StepVinculados db (cdr professores) disciplina)
+			)
+			(StepVinculados db (cdr professores) disciplina)
+		)
+	)
+)
+
+(defun Cursa? (aluno bd)
+	(StepCursa bd aluno (PegaListaDiscs bd))
+)
+
+(defun StepCursa (db aluno disciplinas)
+	(if (null disciplinas)
+		nil
+		(if (eq (AcessaNoGrafoAD db aluno (car disciplinas)) 1)
+			(cons 
+				(car disciplinas)
+				(StepCursa db aluno (cdr disciplinas))
+			)
+			(StepCursa db aluno (cdr disciplinas))
+		)
+	)
+)
+
+(defun Ministra? (professor bd)
+	(StepMinistra bd professor (PegaListaDiscs bd))
+)
+
+(defun StepMinistra (db professor disciplinas)
+	(if (null disciplinas)
+		nil
+		(if (eq (AcessaNoGrafoPD db professor (car disciplinas)) 1)
+			(cons
+				(car disciplinas)
+				(StepMinistra db professor (cdr disciplinas))
+			)
+			(StepMinistra db professor (cdr disciplinas))
 		)
 	)
 )
