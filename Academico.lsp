@@ -1,187 +1,606 @@
-;(setq db 
-;(cons 
-;	(cons 
-;		(cons 
-;			(cons 
-;				(cons 
-;					nil 
-;					(cons 
-;						(cons
-;							(cons
-;								(cons
-;									nil
-;									'(0 0 0 0)
-;								)
-;								'(0 0 0 0)
-;							)
-;							'(0 0 0 0)
-;						)
-;						'(0 0 0 0)
-;					)
-;				)
-;				(cons
-;					(cons
-;						(cons
-;							(cons
-;								nil
-;								'(0 0 0 0)
-;							)
-;							'(0 0 0 0)
-;						)
-;						'(0 0 0 0)
-;					)
-;					'(0 0 0 0)
-;				)
-;			)
-;			'(p1 p2 p3 p4)
-;		)
-;		'(d1 d2 d3 d4)
-;	)
-;	'(a1 a2 a3 a4)
-;)
-;)
-
-(setq db nil)
-
-(defun TentaAdicionar (a b)
-	(if (or (null a) (null b))
-		nil
-		(+ a b)
+;=============================================== INICIO MATRICULAR ==============================================
+(defun Matricular (alunos disciplinas bd)
+	(cons
+		(cons 
+			(cons
+				(cons
+					(cons
+						(cons 
+							nil
+							(AdicionaListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd)) 0) 
+						)
+						(EffVincula
+							bd
+							'(nil)
+							disciplinas
+							(PegaListaProfs bd)
+							(PegaListaProfs bd)
+							(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
+						)
+					)
+					(EffMatricula
+						bd
+						alunos
+						disciplinas 
+						(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd)) 
+						(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd)) 
+						(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
+					)
+				)
+				(PegaListaProfs bd)
+			)
+			(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
+		)
+		(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd))
 	)
-) 	
+)
 
-(defun EncontraAluno (lista nome)
-	(if (null lista)
+(defun EffMatricula (db alunos disciplinas idalunos idalunoscopia iddisciplinas)
+	(if (null idalunos)
 		nil
-		(if (equal (car lista) nome)
-			0
-			(TentaAdicionar 1 (EncontraAluno (cdr lista) nome))
+		(cons
+			(EffMatricula 
+				db 
+				alunos 
+				disciplinas 
+				(cdr idalunos) 
+				idalunoscopia 
+				iddisciplinas
+			)
+			(MatriculaAD 
+				db 
+				(car idalunos) 
+				alunos 
+				disciplinas 
+				iddisciplinas
+			)
 		)
 	)
 )
 
-(defun EncontraDisc (lista nome)
-	(if (null lista)
+(defun MatriculaAD (db alunoatual alunos disciplinas iddisciplinas)
+	(if (null iddisciplinas)
 		nil
-		(if (equal (car lista) nome)
-			0
-			(TentaAdicionar 1 (EncontraDisc (cdr lista) nome))
-		)
-	)
-)
-
-(defun EncontraProf (lista nome)
-	(if (null lista)
-		nil
-		(if (equal (car lista) nome)
-			0
-			(TentaAdicionar 1 (EncontraProf (cdr lista) nome))
-		)
-	)
-)
-
-(defun FazNVezes (func lista n)
-	(if (= n 0)
-		lista
-		(FazNVezes func (funcall func lista) (- n 1))
-	)
-)
-
-(defun CopiaExcluindo (lista nome)
-	(if (null lista)
-		nil
-		(if (not (equal (car lista) nome))
-			(cons (car lista) (copiaexcluindo (cdr lista) nome))
-			;(if (null (cadr lista))
-			;	nil
-			;	(cons (cadr lista) (copiaexcluindo (cddr lista) nome))
-			;)
-			(CopiaExcluindo (cdr lista) nome)
-		)
-	)
-)
-
-(defun CopiaExcluindoMulti (ListaOriginal ListaASerRemovida)
-	(if (null ListaOriginal)
-		nil
-		(if (not (Existe? ListaASerRemovida (car ListaOriginal)))
-			(cons (car ListaOriginal) (CopiaExcluindoMulti (cdr ListaOriginal) ListaASerRemovida))
-			(CopiaExcluindoMulti (cdr ListaOriginal) ListaASerRemovida)
-		)
-	)
-)
-
-;(defun Existe? (lista nome)
-;	(if (eql (car lista) nome)
-;		t
-;		(if (null lista)
-;			nil
-;			(existe? (cdr lista) nome)
-;		)
-;	)
-;)
-
-(defun Existe? (lista valor)
-	(if (null lista)
-		nil
-		(if (equal (car lista) valor)
-			t
-			(Existe? (cdr lista) valor)
-		)
-	)
-)
-
-(defun AdicionaNoFinal (lista nome)
-	(if (null lista)
-		(cons nome (cons nil nil))
-		(cons (car lista) (AdicionaNoFinal (cdr lista) nome))
-	)
-)
-
-(defun AcessaNoGrafoAD (db linha coluna)
-	(car
-		(FazNVezes 
-			(function cdr)
-			(cdr
-				(FazNVezes 
-					(function car) 
-					;(cdaaar db)
-					(PegaGrafoAD db)
-					(EncontraAluno (PegaListaAlunos db) linha)
+		(if (and (existe? disciplinas (car iddisciplinas)) (existe? alunos alunoatual))
+			(cons 
+				1 
+				(MatriculaAD
+					db
+					alunoatual
+					alunos
+					disciplinas
+					(cdr iddisciplinas)
 				)
 			)
-			(EncontraDisc (PegaListaDiscs db) coluna)
-		)
-	)
-)
-
-(defun AcessaNoGrafoPD (db linha coluna)
-	(car
-		(FazNVezes 
-			(function cdr)
-			(cdr
-				(FazNVezes 
-					(function car) 
-					;(cdaaar db)
-					(PegaGrafoPD db)
-					(EncontraProf (PegaListaProfs db) linha)
+			(if (and (existe? (PegaListaAlunos db) alunoatual) (existe? (PegaListaDiscs db) (car iddisciplinas)))
+				(cons
+					(AcessaNoGrafoAD
+						db 
+						alunoatual 
+						(car iddisciplinas)
+					)
+					(MatriculaAD
+						db 
+						alunoatual 
+						alunos 
+						disciplinas 
+						(cdr iddisciplinas)
+					)
+				)
+				(cons
+					0
+					(MatriculaAD 
+						db 
+						alunoatual 
+						alunos 
+						disciplinas 
+						(cdr iddisciplinas)
+					)
 				)
 			)
-			(EncontraDisc (PegaListaDiscs db) coluna)
+		)
+	)
+)
+;================================================= FIM MATRICULAR ===============================================
+;=========================================== INICIO CANCELAR-MATRICULA ==========================================
+(defun Cancelar-Matricula (alunos disciplinas bd)
+	(Desmatricula bd alunos disciplinas (PegaPrimerAlunos bd alunos disciplinas))
+)
+
+(defun Desmatricula (bd alunos disciplinas primedgrafo)
+	(cons
+		(cons 
+			(cons
+				(cons
+					(cons
+						(cons 
+							nil
+							(RemoveListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (EncontraDiscsVazias primedgrafo (PegaGrafoPD bd) (PegaListaDiscs bd) 0))
+						)
+						(EffDesvincula
+							bd
+							'(nil)
+							disciplinas
+							(PegaListaProfs bd)
+							(PegaListaDiscs bd)
+							(EncontraLinhasVazias (PegaGrafoPD bd) (PegaListaProfs bd) 0)
+							(EncontraDiscsVazias primedgrafo (PegaGrafoPD bd) (PegaListaDiscs bd) 0)
+						)
+					)
+					(EffDesmatricula
+						bd
+						alunos
+						disciplinas
+						(PegaListaAlunos bd)
+						(PegaListaDiscs bd)
+						(EncontraLinhasVazias primedgrafo (PegaListaAlunos bd) 0)
+						(EncontraDiscsVazias  primedgrafo (PegaGrafoPD bd) (PegaListaDiscs bd) 0)
+					)
+				)
+				(PegaListaProfs bd)
+			)
+			(CopiaExcluindoMulti 
+				(PegaListaDiscs bd) 
+				(EncontraDiscsVazias 
+					primedgrafo 
+					(PegaGrafoPD bd) 
+					(PegaListaDiscs bd) 
+					0
+				)
+			)
+		)
+		(CopiaExcluindoMulti 
+			(PegaListaAlunos bd) 
+			(EncontraLinhasVazias 
+				primedgrafo 
+				(PegaListaAlunos bd) 
+				0
+			)
 		)
 	)
 )
 
-(defun AdicionaListaCursos (listacursos disciplinasantigas disciplinasnovas n)
-	(if (null disciplinasnovas)
+(defun PegaPrimerAlunos (db alunos disciplinas)
+	(DesmatriculaPrimer db alunos disciplinas (PegaListaAlunos db) (PegaListaAlunos db) (PegaListaDiscs db))
+)
+
+(defun DesmatriculaPrimer (db alunos disciplinas idalunos idalunoscopia iddisciplinas)
+	(if (null idalunos)
 		nil
-		(if (Existe? disciplinasantigas (car disciplinasnovas))
-			(cons (car (FazNVezes (function cdr) listacursos n)) (AdicionaListaCursos listacursos disciplinasantigas (cdr disciplinasnovas) (1+ n)))
-			(cons nil (AdicionaListaCursos listacursos disciplinasantigas (cdr disciplinasnovas) (1+ n)))
+		(cons
+			(DesmatriculaPrimer
+				db 
+				alunos 
+				disciplinas 
+				(cdr idalunos) 
+				idalunoscopia 
+				iddisciplinas
+			)
+			(DesmatriculaPrimerLinha 
+				db 
+				(car idalunos) 
+				alunos 
+				disciplinas 
+				iddisciplinas
+			)
 		)
 	)
 )
 
+(defun DesmatriculaPrimerLinha (db alunoatual alunos disciplinas iddisciplinas)
+	(if (null iddisciplinas)
+		nil
+		(if (and (existe? disciplinas (car iddisciplinas)) (existe? alunos alunoatual))
+			(cons 
+				0
+				(DesmatriculaPrimerLinha 
+					db 
+					alunoatual 
+					alunos 
+					disciplinas 
+					(cdr iddisciplinas)
+				)
+			)
+			(cons
+				(AcessaNoGrafoAD
+					db 
+					alunoatual 
+					(car iddisciplinas)
+				)
+				(DesmatriculaPrimerLinha 
+					db 
+					alunoatual 
+					alunos 
+					disciplinas 
+					(cdr iddisciplinas)
+				)
+			)
+		)
+	)
+)
+
+(defun EffDesmatricula (db alunos disciplinas alunosantigos disciplinasantigas alunosexcluidos disciplinasexcluidas)
+	(if (null alunosantigos)
+		nil
+		(if (not (Existe? alunosexcluidos (car alunosantigos)))
+			(cons
+				(EffDesmatricula 
+					db 
+					alunos 
+					disciplinas 
+					(cdr alunosantigos) 
+					disciplinasantigas 
+					alunosexcluidos 
+					disciplinasexcluidas
+				)
+				(DesmatriculaAD 
+					db 
+					(car alunosantigos) 
+					alunos 
+					disciplinas 
+					disciplinasantigas 
+					disciplinasexcluidas
+				)
+			)
+			(EffDesmatricula 
+				db 
+				alunos 
+				disciplinas 
+				(cdr alunosantigos) 
+				disciplinasantigas 
+				alunosexcluidos 
+				disciplinasexcluidas
+			)
+		)
+	)
+)
+
+(defun DesmatriculaAD (db alunoatual alunos disciplinas disciplinasantigas disciplinasexcluidas)
+	(if (null disciplinasantigas)
+		nil
+		(if (not (Existe? disciplinasexcluidas (car disciplinasantigas)))
+			(if (and (Existe? disciplinas (car disciplinasantigas)) (Existe? alunos alunoatual))
+				(cons
+					0
+					(DesmatriculaAD
+						db 
+						alunoatual 
+						alunos 
+						disciplinas 
+						(cdr disciplinasantigas) 
+						disciplinasexcluidas
+					)
+				)
+				(cons
+					(AcessaNoGrafoAD 
+						db 
+						alunoatual 
+						(car disciplinasantigas)
+					)
+					(DesmatriculaAD 
+						db 
+						alunoatual 
+						alunos 
+						disciplinas 
+						(cdr disciplinasantigas) 
+						disciplinasexcluidas
+					)
+				)
+			)
+			(DesmatriculaAD 
+				db 
+				alunoatual 
+				alunos 
+				disciplinas 
+				(cdr disciplinasantigas)
+				disciplinasexcluidas
+			)
+		)
+	)
+)
+;============================================= FIM CANCELAR-MATRICULA ===========================================
+;================================================ INICIO VINCULAR ===============================================
+(defun Vincular (professores disciplinas bd)
+	(cons
+		(cons 
+			(cons
+				(cons
+					(cons
+						(cons 
+							nil
+							(AdicionaListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd)) 0) 
+						)
+						(EffVincula
+							bd
+							professores 
+							disciplinas 
+							(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd)) 
+							(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd)) 
+							(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
+						)
+					)
+					(EffMatricula
+						bd 
+						'(nil) 
+						disciplinas
+						(PegaListaAlunos bd)
+						(PegaListaAlunos bd)
+						(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
+					)
+				)
+				(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd))
+			)
+			(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
+		)
+	(PegaListaAlunos bd)
+	)
+)
+
+(defun EffVincula (db professores disciplinas idprofs idprofscopia iddisciplinas)
+	(if (null idprofs)
+		nil
+		(cons
+			(EffVincula 
+				db 
+				professores 
+				disciplinas 
+				(cdr idprofs) 
+				idprofscopia 
+				iddisciplinas
+			)
+			(VinculaAD 
+				db 
+				(car idprofs) 
+				professores 
+				disciplinas 
+				iddisciplinas
+			)
+		)
+	)
+)
+
+(defun VinculaAD (db profatual professores disciplinas iddisciplinas)
+	(if (null iddisciplinas)
+		nil
+		(if (and (existe? disciplinas (car iddisciplinas)) (existe? professores profatual))
+			(cons 
+				1 
+				(VinculaAD
+					db 
+					profatual 
+					professores 
+					disciplinas 
+					(cdr iddisciplinas)
+				)
+			)
+			(if (and (existe? (PegaListaProfs db) profatual) (existe? (PegaListaDiscs db) (car iddisciplinas)))
+				(cons
+					(AcessaNoGrafoPD 
+						db 
+						profatual 
+						(car iddisciplinas)
+					)
+					(VinculaAD 
+						db 
+						profatual 
+						professores 
+						disciplinas 
+						(cdr iddisciplinas)
+					)
+				)
+				(cons
+					0
+					(VinculaAD 
+						db 
+						profatual 
+						professores 
+						disciplinas 
+						(cdr iddisciplinas)
+					)
+				)
+			)
+		)
+	)
+)
+;================================================= FIM VINCULAR ===============================================
+;============================================ INICIO REMOVER-VINCULO ==========================================
+(defun Remover-Vinculo (professores disciplinas bd)
+	(Desvincula bd professores disciplinas (PegaPrimerProfs bd professores disciplinas))
+)
+
+(defun Desvincula (bd profs disciplinas primedgrafo)
+	(cons
+		(cons 
+			(cons
+				(cons
+					(cons
+						(cons 
+							nil
+							(RemoveListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (EncontraDiscsVazias (PegaGrafoAD bd) primedgrafo (PegaListaDiscs bd) 0))
+						)
+						(EffDesvincula
+							bd1
+							profs
+							disciplinas
+							(PegaListaProfs bd)
+							(PegaListaDiscs bd)
+							(EncontraLinhasVazias primedgrafo (PegaListaProfs bd) 0)
+							(EncontraDiscsVazias (PegaGrafoAD bd) primedgrafo (PegaListaDiscs bd) 0)
+						)
+					)
+					(EffDesmatricula
+							bd
+							'(nil)
+							disciplinas
+							(PegaListaAlunos bd)
+							(PegaListaDiscs bd)
+							(EncontraLinhasVazias (PegaGrafoAD bd) (PegaListaAlunos bd) 0)
+							(EncontraDiscsVazias (PegaGrafoAD bd) primedgrafo (PegaListaDiscs bd) 0)
+					)
+				)
+				(CopiaExcluindoMulti 
+					(PegaListaProfs bd) 
+					(EncontraLinhasVazias 
+						primedgrafo 
+						(PegaListaProfs bd) 
+						0
+					)
+				)
+			)
+			(CopiaExcluindoMulti 
+				(PegaListaDiscs bd) 
+				(EncontraDiscsVazias 
+					(PegaGrafoAD bd) 
+					primedgrafo 
+					(PegaListaDiscs bd) 
+					0
+				)
+			)
+		)
+		(PegaListaAlunos bd)
+	)
+)
+
+(defun PegaPrimerProfs (db profs disciplinas)
+	(DesvinculaPrimer db profs disciplinas (PegaListaProfs db) (PegaListaProfs db) (PegaListaDiscs db))
+)
+
+(defun DesvinculaPrimer (db profs disciplinas idprofs idprofscopia iddisciplinas)
+	(if (null idprofs)
+		nil
+		(cons
+			(DesvinculaPrimer 
+				db 
+				profs 
+				disciplinas 
+				(cdr idprofs) 
+				idprofscopia 
+				iddisciplinas
+			)
+			(DesvinculaPrimerLinha 
+				db 
+				(car idprofs) 
+				profs 
+				disciplinas 
+				iddisciplinas
+			)
+		)
+	)
+)
+
+(defun DesvinculaPrimerLinha (db profatual profs disciplinas iddisciplinas)
+	(if (null iddisciplinas)
+		nil
+		(if (and (existe? disciplinas (car iddisciplinas)) (existe? profs profatual))
+			(cons 
+				0
+				(DesvinculaPrimerLinha 
+					db 
+					profatual 
+					profs 
+					disciplinas 
+					(cdr iddisciplinas)
+				)
+			)
+			(cons
+				(AcessaNoGrafoPD 
+					db 
+					profatual 
+					(car iddisciplinas)
+				)
+				(DesvinculaPrimerLinha 
+					db 
+					profatual 
+					profs 
+					disciplinas 
+					(cdr iddisciplinas)
+				)
+			)
+		)
+	)
+)
+
+(defun EffDesvincula (db profs disciplinas profsantigos disciplinasantigas profsexcluidos disciplinasexcluidas)
+	(if (null profsantigos)
+		nil
+		(if (not (Existe? profsexcluidos (car profsantigos)))
+			(cons
+				(EffDesvincula 
+					db 
+					profs 
+					disciplinas 
+					(cdr profsantigos) 
+					disciplinasantigas 
+					profsexcluidos 
+					disciplinasexcluidas
+				)
+				(DesvinculaAD 
+					db 
+					(car profsantigos) 
+					profs 
+					disciplinas 
+					disciplinasantigas 
+					disciplinasexcluidas
+				)
+			)
+			(EffDesmatricula 
+				db 
+				profs 
+				disciplinas 
+				(cdr profsantigos) 
+				disciplinasantigas 
+				profsexcluidos 
+				disciplinasexcluidas
+			)
+		)
+	)
+)
+
+(defun DesvinculaAD (db profatual profs disciplinas disciplinasantigas disciplinasexcluidas)
+	(if (null disciplinasantigas)
+		nil
+		(if (not (Existe? disciplinasexcluidas (car disciplinasantigas)))
+			(if (and (Existe? disciplinas (car disciplinasantigas)) (Existe? profs profatual))
+				(cons
+					0
+					(DesvinculaAD 
+						db 
+						profatual 
+						profs 
+						disciplinas 
+						(cdr disciplinasantigas) 
+						disciplinasexcluidas
+					)
+				)
+				(cons
+					(AcessaNoGrafoPD 
+						db 
+						profatual 
+						(car disciplinasantigas)
+					)
+					(DesvinculaAD 
+						db 
+						profatual 
+						profs 
+						disciplinas 
+						(cdr disciplinasantigas) 
+						disciplinasexcluidas
+					)
+				)
+			)
+			(DesvinculaAD 
+				db 
+				profatual 
+				profs 
+				disciplinas 
+				(cdr disciplinasantigas) 
+				disciplinasexcluidas
+			)
+		)
+	)
+)
+;=============================================== FIM REMOVER-VINCULO ==========================================
+;=========================================== INICIO VINCULAR-DISC-CURSO =======================================
 (defun Vincular-Disc-Curso (disciplina curso bd)
 	(cons
 		(cons 
@@ -190,7 +609,13 @@
 					(cons
 						(cons 
 							nil
-							(StepVinculaDiscCurso (PegaListaCursos bd) (PegaListaDiscs bd) disciplina curso 0)
+							(StepVinculaDiscCurso 
+								(PegaListaCursos bd) 
+								(PegaListaDiscs bd) 
+								disciplina 
+								curso 
+								0
+							)
 						)
 						(PegaGrafoPD bd)
 					)
@@ -208,209 +633,52 @@
 	(if (null listadisciplinas)
 		nil
 		(if (equal (car listadisciplinas) disciplina)
-			(cons curso (StepVinculaDiscCurso listacursos (cdr listadisciplinas) disciplina curso (1+ n)))
-			(cons (car (FazNVezes (function cdr) listacursos n)) (StepVinculaDiscCurso listacursos (cdr listadisciplinas) disciplina curso (1+ n)))
-		)
-	)
-)
-
-(defun Disc-Curso? (disciplina bd)
-	(StepDiscCurso (PegaListaDiscs bd) disciplina (PegaListaCursos bd))
-)
-
-(defun StepDiscCurso (listadisciplinas disciplina listacursos)
-	(if (null listadisciplinas)
-		nil
-		(if (equal (car listadisciplinas) disciplina)
-			(car listacursos)
-			(StepDiscCurso (cdr listadisciplinas) disciplina (cdr listacursos))
-		)
-	)
-)
-
-(defun Matricular (alunos disciplinas bd)
-	(cons
-		(cons 
-			(cons
-				(cons
-					(cons
-						(cons 
-							nil
-							(AdicionaListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd)) 0) 
-						)
-						(EffVincula
-							bd
-							'(nil)
-							disciplinas
-							(PegaListaProfs bd)
-							(PegaListaProfs bd)
-							;(cdaar db)
-							;(cdaar db)
-							(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
-						)
-						;(cdr (caaaar db))
-					)
-					(EffMatricula
-						bd
-						alunos
-						disciplinas 
-						(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd)) 
-						(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd)) 
-						(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
-					)
-				)
-				(PegaListaProfs bd)
-				;(cdaar db)
-			)
-			(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
-		)
-		(VerificaEAdiciona (PegaListaAlunos bd) alunos (PegaListaAlunos bd))
-	)
-)
-
-(defun MatriculaAD (db alunoatual alunos disciplinas iddisciplinas)
-	(if (null iddisciplinas)
-		nil
-		(if (and (existe? disciplinas (car iddisciplinas)) (existe? alunos alunoatual))
 			(cons 
-				1 
-				(MatriculaAD db alunoatual alunos disciplinas (cdr iddisciplinas))
-			)
-			(if (and (existe? (PegaListaAlunos db) alunoatual) (existe? (PegaListaDiscs db) (car iddisciplinas)))
-				(cons
-					(AcessaNoGrafoAD db alunoatual (car iddisciplinas))
-					;0
-					(MatriculaAD db alunoatual alunos disciplinas (cdr iddisciplinas))
-				)
-				(cons
-					;(AcessaNoGrafoAD db alunoatual (car iddisciplinas))
-					0
-					(MatriculaAD db alunoatual alunos disciplinas (cdr iddisciplinas))
+				curso 
+				(StepVinculaDiscCurso 
+					listacursos 
+					(cdr listadisciplinas) 
+					disciplina 
+					curso 
+					(1+ n)
 				)
 			)
-		)
-	)
-)
-
-(defun EffMatricula (db alunos disciplinas idalunos idalunoscopia iddisciplinas)
-	(if (null idalunos)
-		nil
-		;(cons
-		;	nil 
-		;	(MatriculaAD db alunos idalunoscopia disciplinas 
-		;	iddisciplinas)
-		;)
-		(cons
-			(EffMatricula db alunos disciplinas (cdr idalunos) idalunoscopia iddisciplinas)
-			(MatriculaAD db (car idalunos) alunos disciplinas iddisciplinas)
-		)
-	)
-)
-
-(defun Vincular (professores disciplinas bd)
-	(cons
-		(cons 
-			(cons
-				(cons
-					(cons
-						(cons 
-							nil
-							(AdicionaListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd)) 0) 
-						)
-						;(cdr (caaaar db))
-						(EffVincula
-							bd
-							professores 
-							disciplinas 
-							(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd)) 
-							(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd)) 
-							(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
-						)
-					)
-					(EffMatricula
-						bd 
-						'(nil) 
-						disciplinas 
-						;(cdr db) 
-						(PegaListaAlunos bd)
-						;(cdr db) 
-						(PegaListaAlunos bd)
-						(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
-					)
-				)
-				(VerificaEAdiciona (PegaListaProfs bd) professores (PegaListaProfs bd))
-			)
-			(VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd))
-		)
-	(PegaListaAlunos bd)
-	)
-)
-
-(defun VinculaAD (db profatual professores disciplinas iddisciplinas)
-	(if (null iddisciplinas)
-		nil
-		(if (and (existe? disciplinas (car iddisciplinas)) (existe? professores profatual))
 			(cons 
-				1 
-				(VinculaAD db profatual professores disciplinas (cdr iddisciplinas))
-			)
-			(if (and (existe? (PegaListaProfs db) profatual) (existe? (PegaListaDiscs db) (car iddisciplinas)))
-				(cons
-					(AcessaNoGrafoPD db profatual (car iddisciplinas))
-					;0
-					(VinculaAD db profatual professores disciplinas (cdr iddisciplinas))
+				(car 
+					(FazNVezes 
+						(function cdr) 
+						listacursos 
+						n
+					)
+				) 
+				(StepVinculaDiscCurso 
+					listacursos 
+					(cdr listadisciplinas) 
+					disciplina 
+					curso 
+					(1+ n)
 				)
-				(cons
-					;(AcessaNoGrafoAD db alunoatual (car iddisciplinas))
-					0
-					(VinculaAD db profatual professores disciplinas (cdr iddisciplinas))
-				)
 			)
 		)
 	)
 )
-
-(defun EffVincula (db professores disciplinas idprofs idprofscopia iddisciplinas)
-	(if (null idprofs)
-		nil
-		;(cons
-		;	nil 
-		;	(MatriculaAD db alunos idalunoscopia disciplinas 
-		;	iddisciplinas)
-		;)
-		(cons
-			(EffVincula db professores disciplinas (cdr idprofs) idprofscopia iddisciplinas)
-			(VinculaAD db (car idprofs) professores disciplinas iddisciplinas)
-		)
-	)
-)
-
-(defun VerificaEAdiciona (lista nomes antiga)
-	(if (not (null lista))
-		(cons (car lista) (VerificaEAdiciona (cdr lista) nomes antiga))
-		(if (null (car nomes))
-			;(cons nil nil)
-			nil
-			(if (not (existe? antiga (car nomes)))
-				(cons (car nomes) (VerificaEAdiciona lista (cdr nomes) antiga))
-				(VerificaEAdiciona lista (cdr nomes) antiga)
-			)
-		)
-	)
-)
-
+;============================================= FIM VINCULAR-DISC-CURSO ========================================
+;================================================== INICIO ALUNOS =============================================
 (defun Alunos? (bd)
 	(cdr bd)
 )
-
+;==================================================== FIM ALUNOS ==============================================
+;================================================ INICIO PROFESSORES ==========================================
 (defun Professores? (bd)
 	(cdaar bd)
 )
-
+;================================================== FIM PROFESSORES ===========================================
+;================================================ INICIO DISCIPLINAS ==========================================
 (defun Disciplinas? (bd)
 	(cdar bd)
 )
-
+;================================================== FIM DISCIPLINAS ===========================================
+;================================================ INICIO MATRICULADOS =========================================
 (defun Matriculados? (disciplina bd)
 	(StepMatriculados bd (PegaListaAlunos bd) disciplina)
 )
@@ -427,7 +695,8 @@
 		)
 	)
 )
-
+;================================================ FIM MATRICULADOS =========================================
+;=============================================== INICIO VINCULADOS =========================================
 (defun Vinculados? (disciplina bd)
 	(StepVinculados bd (PegaListaProfs bd) disciplina)
 )
@@ -444,7 +713,8 @@
 		)
 	)
 )
-
+;================================================= FIM VINCULADOS ==========================================
+;================================================== INICIO CURSA ===========================================
 (defun Cursa? (aluno bd)
 	(StepCursa bd aluno (PegaListaDiscs bd))
 )
@@ -461,7 +731,8 @@
 		)
 	)
 )
-
+;==================================================== FIM CURSA ============================================
+;================================================= INICIO MINISTRA =========================================
 (defun Ministra? (professor bd)
 	(StepMinistra bd professor (PegaListaDiscs bd))
 )
@@ -478,283 +749,216 @@
 		)
 	)
 )
+;=================================================== FIM MINISTRA ==========================================
+;================================================= INICIO DISC-CURSO =======================================
+(defun Disc-Curso? (disciplina bd)
+	(StepDiscCurso (PegaListaDiscs bd) disciplina (PegaListaCursos bd))
+)
 
-(defun Cancelar-Matricula (alunos disciplinas bd)
-	(Desmatricula bd alunos disciplinas (PegaPrimerAlunos bd alunos disciplinas))
+(defun StepDiscCurso (listadisciplinas disciplina listacursos)
+	(if (null listadisciplinas)
+		nil
+		(if (equal (car listadisciplinas) disciplina)
+			(car listacursos)
+			(StepDiscCurso 
+				(cdr listadisciplinas) 
+				disciplina 
+				(cdr listacursos)
+			)
+		)
+	)
+)
+;=================================================== FIM DISC-CURSO ========================================
+
+;=============================================== INICIO FUNCOES SUPORTE ====================================
+(defun TentaAdicionar (a b)
+	(if (or (null a) (null b))
+		nil
+		(+ a b)
+	)
+) 	
+
+(defun EncontraEmLista (lista nome) ;Procura algum nome na lista e retorna a posicao
+	(if (null lista)
+		nil
+		(if (equal (car lista) nome)
+			0
+			(TentaAdicionar 1 (EncontraEmLista (cdr lista) nome))
+		)
+	)
+)
+
+(defun FazNVezes (func lista n) ;Repete uma funcao (cdr ou car) n vezes (usar com encontraemlista)
+	(if (= n 0)
+		lista
+		(FazNVezes func (funcall func lista) (- n 1))
+	)
+)
+
+(defun CopiaExcluindoMulti (ListaOriginal ListaASerRemovida) ;Copia elementos de uma lista, desde que nao estejam na outra lista
+	(if (null ListaOriginal)
+		nil
+		(if (not (Existe? ListaASerRemovida (car ListaOriginal)))
+			(cons (car ListaOriginal) (CopiaExcluindoMulti (cdr ListaOriginal) ListaASerRemovida))
+			(CopiaExcluindoMulti (cdr ListaOriginal) ListaASerRemovida)
+		)
+	)
+)
+
+(defun Existe? (lista valor) ;Verifica se existe o elemento na lista
+	(if (null lista)
+		nil
+		(if (equal (car lista) valor)
+			t
+			(Existe? (cdr lista) valor)
+		)
+	)
+)
+
+(defun AcessaNoGrafoAD (db linha coluna)
+	(car
+		(FazNVezes 
+			(function cdr)
+			(cdr
+				(FazNVezes 
+					(function car)
+					(PegaGrafoAD db)
+					(EncontraEmLista (PegaListaAlunos db) linha) ;Encontra a posicao referente ao aluno (linha)
+				)
+			)
+			(EncontraEmLista (PegaListaDiscs db) coluna) ;Encontra a posicao referente a disciplina (coluna)
+		)
+	)
+)
+
+(defun AcessaNoGrafoPD (db linha coluna)
+	(car
+		(FazNVezes 
+			(function cdr)
+			(cdr
+				(FazNVezes 
+					(function car)
+					(PegaGrafoPD db)
+					(EncontraEmLista (PegaListaProfs db) linha) ;Encontra a posicao referente ao professor (linha)
+				)
+			)
+			(EncontraEmLista (PegaListaDiscs db) coluna) ;Encontra a posicao referente a disciplina (coluna)
+		)
+	)
+)
+
+(defun AdicionaListaCursos (listacursos disciplinasantigas disciplinasnovas n)
+	(if (null disciplinasnovas)
+		nil
+		(if (Existe? disciplinasantigas (car disciplinasnovas))
+			(cons 
+				(car 
+					(FazNVezes (function cdr) listacursos n)
+				) 
+				(AdicionaListaCursos 
+					listacursos 
+					disciplinasantigas 
+					(cdr disciplinasnovas) 
+					(1+ n)
+				)
+			)
+			(cons 
+				nil 
+				(AdicionaListaCursos 
+					listacursos 
+					disciplinasantigas 
+					(cdr disciplinasnovas) 
+					(1+ n)
+				)
+			)
+		)
+	)
 )
 
 (defun RemoveListaCursos (listacursos listadiscsantiga listadiscsvazias)
 	(if (null listadiscsantiga)
 		nil
 		(if (Existe? listadiscsvazias (car listadiscsantiga))
-			(RemoveListaCursos (cdr listacursos) (cdr listadiscsantiga) listadiscsvazias)
-			(cons (car listacursos) (RemoveListaCursos (cdr listacursos) (cdr listadiscsantiga) listadiscsvazias))
+			(RemoveListaCursos 
+				(cdr listacursos) 
+				(cdr listadiscsantiga) 
+				listadiscsvazias
+			)
+			(cons
+				(car listacursos) 
+				(RemoveListaCursos 
+					(cdr listacursos) 
+					(cdr listadiscsantiga) 
+					listadiscsvazias
+				)
+			)
 		)
 	)
 )
 
-(defun Desmatricula (bd alunos disciplinas primedgrafo)
-	(cons
+(defun VerificaEAdiciona (lista nomes antiga)
+	(if (not (null lista))
 		(cons 
-			(cons
-				(cons
-					(cons
-						;nil
-						(cons 
-							nil
-							(RemoveListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (EncontraDiscsVazias primedgrafo (PegaGrafoPD bd) (PegaListaDiscs bd)))
-							;(AdicionaListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd)) 0) 
-						)
-						;(PegaGrafoPD bd)
-						(EffDesvincula
-							bd
-							'(nil)
-							disciplinas
-							(PegaListaProfs bd)
-							(PegaListaDiscs bd)
-							(EncontraProfsVazios (PegaGrafoPD bd) (PegaListaProfs bd))
-							(EncontraDiscsVazias primedgrafo (PegaGrafoPD bd) (PegaListaDiscs bd))
-						)
-						;(cdr (caaaar db))
-					)
-					(EffDesmatricula
-						bd
-						alunos
-						disciplinas
-						(PegaListaAlunos bd)
-						(PegaListaDiscs bd)
-						(EncontraAlunosVazios primedgrafo (PegaListaAlunos bd))
-						(EncontraDiscsVazias  primedgrafo (PegaGrafoPD bd) (PegaListaDiscs bd))
-					)
+			(car lista) 
+			(VerificaEAdiciona (cdr lista) nomes antiga)
+		)
+		(if (null (car nomes))
+			nil
+			(if (not (existe? antiga (car nomes)))
+				(cons 
+					(car nomes) 
+					(VerificaEAdiciona lista (cdr nomes) antiga)
 				)
-				(PegaListaProfs bd)
-				;(cdaar db)
-			)
-			(CopiaExcluindoMulti (PegaListaDiscs bd) (EncontraDiscsVazias primedgrafo (PegaGrafoPD bd) (PegaListaDiscs bd)))
-		)
-		(CopiaExcluindoMulti (PegaListaAlunos bd) (EncontraAlunosVazios primedgrafo (PegaListaAlunos bd)))
-	)
-)
-
-(defun PegaPrimerAlunos (db alunos disciplinas)
-	(DesmatriculaPrimer db alunos disciplinas (PegaListaAlunos db) (PegaListaAlunos db) (PegaListaDiscs db))
-)
-
-(defun DesmatriculaPrimer (db alunos disciplinas idalunos idalunoscopia iddisciplinas)
-	(if (null idalunos)
-		nil
-		(cons
-			(DesmatriculaPrimer db alunos disciplinas (cdr idalunos) idalunoscopia iddisciplinas)
-			(DesmatriculaPrimerLinha db (car idalunos) alunos disciplinas iddisciplinas)
-		)
-	)
-)
-
-(defun DesmatriculaPrimerLinha (db alunoatual alunos disciplinas iddisciplinas)
-	(if (null iddisciplinas)
-		nil
-		(if (and (existe? disciplinas (car iddisciplinas)) (existe? alunos alunoatual))
-			(cons 
-				0
-				(DesmatriculaPrimerLinha db alunoatual alunos disciplinas (cdr iddisciplinas))
-			)
-			(cons
-				(AcessaNoGrafoAD db alunoatual (car iddisciplinas))
-					;0
-				(DesmatriculaPrimerLinha db alunoatual alunos disciplinas (cdr iddisciplinas))
+				(VerificaEAdiciona lista (cdr nomes) antiga)
 			)
 		)
 	)
 )
 
-(defun EffDesmatricula (db alunos disciplinas alunosantigos disciplinasantigas alunosexcluidos disciplinasexcluidas)
-	(if (null alunosantigos)
-		nil
-		(if (not (Existe? alunosexcluidos (car alunosantigos)))
-			(cons
-				(EffDesmatricula db alunos disciplinas (cdr alunosantigos) disciplinasantigas alunosexcluidos disciplinasexcluidas)
-				(DesmatriculaAD db (car alunosantigos) alunos disciplinas disciplinasantigas disciplinasexcluidas)
-			)
-			(EffDesmatricula db alunos disciplinas (cdr alunosantigos) disciplinasantigas alunosexcluidos disciplinasexcluidas)
-		)
-	)
-)
-
-(defun DesmatriculaAD (db alunoatual alunos disciplinas disciplinasantigas disciplinasexcluidas)
-	(if (null disciplinasantigas)
-		nil
-		(if (not (Existe? disciplinasexcluidas (car disciplinasantigas)))
-			(if (and (Existe? disciplinas (car disciplinasantigas)) (Existe? alunos alunoatual))
-				(cons
-					0
-					(DesmatriculaAD db alunoatual alunos disciplinas (cdr disciplinasantigas) disciplinasexcluidas)
-				)
-				(cons
-					(AcessaNoGrafoAD db alunoatual (car disciplinasantigas))
-					(DesmatriculaAD db alunoatual alunos disciplinas (cdr disciplinasantigas) disciplinasexcluidas)
-				)
-				
-			)
-			(DesmatriculaAD db alunoatual alunos disciplinas (cdr disciplinasantigas) disciplinasexcluidas)
-		)
-	)
-)
-
-(defun EncontraAlunosVazios (db alunos)
-	(StepEncontraAlunosVazios db alunos 0)
-)
-
-(defun StepEncontraAlunosVazios (grafo alunos n)
-	(if (null alunos)
+(defun EncontraLinhasVazias (grafo referencia n)
+	(if (null referencia)
 		nil
 		(if (ChecaLinhaVazia (cdr (FazNVezes (function car) grafo n)))
-			(cons (car alunos) (StepEncontraAlunosVazios grafo (cdr alunos) (1+ n)))
-			(StepEncontraAlunosVazios grafo (cdr alunos) (1+ n))
+			(cons 
+				(car referencia) 
+				(EncontraLinhasVazias 
+					grafo 
+					(cdr referencia) 
+					(1+ n)
+				)
+			)
+			(EncontraLinhasVazias 
+				grafo 
+				(cdr referencia) 
+				(1+ n)
+			)
 		)
 	)
 )
 
-(defun EncontraDiscsVazias (grafoalunos grafoprofs disciplinas)
-	(StepEncontraDiscsVazias grafoalunos grafoprofs disciplinas 0)
-)
-
-(defun StepEncontraDiscsVazias (grafoalunos grafoprofs disciplinas n)
+(defun EncontraDiscsVazias (grafoalunos grafoprofs disciplinas n)
 	(if (null disciplinas)
 		nil
 		(if (and (ChecaColunaVazia n grafoalunos) (ChecaColunaVazia n grafoprofs))
-			(cons (car disciplinas) (StepEncontraDiscsVazias grafoalunos grafoprofs (cdr disciplinas) (1+ n)))
-			(StepEncontraDiscsVazias grafoalunos grafoprofs (cdr disciplinas) (1+ n))
-		)
-	)
-)
-;---------------------------------------------------
-(defun Remover-Vinculo (professores disciplinas bd)
-	(Desvincula bd professores disciplinas (PegaPrimerProfs bd professores disciplinas))
-)
-
-(defun Desvincula (bd profs disciplinas primedgrafo)
-	(cons
-		(cons 
 			(cons
-				(cons
-					(cons
-						;nil
-						(cons 
-							nil
-							(RemoveListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (EncontraDiscsVazias (PegaGrafoAD bd) primedgrafo (PegaListaDiscs bd)))
-							;(AdicionaListaCursos (PegaListaCursos bd) (PegaListaDiscs bd) (VerificaEAdiciona (PegaListaDiscs bd) disciplinas (PegaListaDiscs bd)) 0) 
-						)
-						(EffDesvincula
-							bd
-							profs
-							disciplinas
-							(PegaListaProfs bd)
-							(PegaListaDiscs bd)
-							(EncontraProfsVazios primedgrafo (PegaListaProfs bd))
-							(EncontraDiscsVazias (PegaGrafoAD bd) primedgrafo (PegaListaDiscs bd));;;;;;;;;;gabi passou por aqui PegaGrafoAD to PegaGrafoPD
-						)
-						;(cdr (caaaar db))
-					)
-					;(PegaGrafoAD bd)
-					(EffDesmatricula
-							bd
-							'(nil)
-							disciplinas
-							(PegaListaAlunos bd)
-							(PegaListaDiscs bd)
-							(EncontraAlunosVazios (PegaGrafoAD bd) (PegaListaAlunos bd))
-							(EncontraDiscsVazias (PegaGrafoAD bd) primedgrafo (PegaListaDiscs bd))
-					)
+				(car disciplinas) 
+				(EncontraDiscsVazias 
+					grafoalunos 
+					grafoprofs 
+					(cdr disciplinas) 
+					(1+ n)
 				)
-				;(PegaListaProfs bd)
-				(CopiaExcluindoMulti (PegaListaProfs bd) (EncontraProfsVazios primedgrafo (PegaListaProfs bd)))
-				;(cdaar db)
 			)
-			(CopiaExcluindoMulti (PegaListaDiscs bd) (EncontraDiscsVazias (PegaGrafoAD bd) primedgrafo (PegaListaDiscs bd)))
-		)
-		(PegaListaAlunos bd)
-		;(CopiaExcluindoMulti (PegaListaAlunos bd) (EncontraAlunosVazios primedgrafo (PegaListaAlunos bd)))
-	)
-)
-
-(defun PegaPrimerProfs (db profs disciplinas)
-	(DesvinculaPrimer db profs disciplinas (PegaListaProfs db) (PegaListaProfs db) (PegaListaDiscs db))
-)
-
-(defun DesvinculaPrimer (db profs disciplinas idprofs idprofscopia iddisciplinas)
-	(if (null idprofs)
-		nil
-		(cons
-			(DesvinculaPrimer db profs disciplinas (cdr idprofs) idprofscopia iddisciplinas)
-			(DesvinculaPrimerLinha db (car idprofs) profs disciplinas iddisciplinas)
-		)
-	)
-)
-
-(defun DesvinculaPrimerLinha (db profatual profs disciplinas iddisciplinas)
-	(if (null iddisciplinas)
-		nil
-		(if (and (existe? disciplinas (car iddisciplinas)) (existe? profs profatual))
-			(cons 
-				0
-				(DesvinculaPrimerLinha db profatual profs disciplinas (cdr iddisciplinas))
-			)
-			(cons
-				(AcessaNoGrafoPD db profatual (car iddisciplinas))
-					;0
-				(DesvinculaPrimerLinha db profatual profs disciplinas (cdr iddisciplinas))
+			(EncontraDiscsVazias 
+				grafoalunos 
+				grafoprofs 
+				(cdr disciplinas) 
+				(1+ n)
 			)
 		)
 	)
 )
 
-(defun EffDesvincula (db profs disciplinas profsantigos disciplinasantigas profsexcluidos disciplinasexcluidas)
-	(if (null profsantigos)
-		nil
-		(if (not (Existe? profsexcluidos (car profsantigos)))
-			(cons
-				(EffDesvincula db profs disciplinas (cdr profsantigos) disciplinasantigas profsexcluidos disciplinasexcluidas)
-				(DesvinculaAD db (car profsantigos) profs disciplinas disciplinasantigas disciplinasexcluidas)
-			)
-			(EffDesmatricula db profs disciplinas (cdr profsantigos) disciplinasantigas profsexcluidos disciplinasexcluidas)
-		)
-	)
-)
-
-(defun DesvinculaAD (db profatual profs disciplinas disciplinasantigas disciplinasexcluidas)
-	(if (null disciplinasantigas)
-		nil
-		(if (not (Existe? disciplinasexcluidas (car disciplinasantigas)))
-			(if (and (Existe? disciplinas (car disciplinasantigas)) (Existe? profs profatual))
-				(cons
-					0
-					(DesvinculaAD db profatual profs disciplinas (cdr disciplinasantigas) disciplinasexcluidas)
-				)
-				(cons
-					(AcessaNoGrafoPD db profatual (car disciplinasantigas))
-					(DesvinculaAD db profatual profs disciplinas (cdr disciplinasantigas) disciplinasexcluidas)
-				)
-				
-			)
-			(DesvinculaAD db profatual profs disciplinas (cdr disciplinasantigas) disciplinasexcluidas)
-		)
-	)
-)
-
-(defun EncontraProfsVazios (db profs)
-	(StepEncontraProfsVazios db profs 0)
-)
-
-(defun StepEncontraProfsVazios (grafo profs n)
-	(if (null profs)
-		nil
-		(if (ChecaLinhaVazia (cdr (FazNVezes (function car) grafo n)))
-			(cons (car profs) (StepEncontraAlunosVazios grafo (cdr profs) (1+ n)))
-			(StepEncontraAlunosVazios grafo (cdr profs) (1+ n))
-		)
-	)
-)
-;---------------------------------------------------
 (defun ChecaLinhaVazia (linha)
 	(if (null linha)
 		t
