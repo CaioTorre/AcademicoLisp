@@ -638,30 +638,33 @@
 ;=============================================== FIM REMOVER-VINCULO ==========================================
 ;=========================================== INICIO VINCULAR-DISC-CURSO =======================================
 (defun Vincular-Disc-Curso (disciplina curso bd)
-	(cons
-		(cons 
-			(cons
+	(if (null (Existe? (cdr (car bd)) disciplina))
+	bd
+		(cons
+			(cons 
 				(cons
 					(cons
-						(cons 
-							nil
-							(StepVinculaDiscCurso 
-								(PegaListaCursos bd) 
-								(PegaListaDiscs bd) 
-								disciplina 
-								curso 
-								0
+						(cons
+							(cons 
+								nil
+								(StepVinculaDiscCurso 
+									(PegaListaCursos bd) 
+									(PegaListaDiscs bd) 
+									disciplina 
+									curso 
+									0
+								)
 							)
+							(PegaGrafoPD bd)
 						)
-						(PegaGrafoPD bd)
+						(PegaGrafoAD bd)
 					)
-					(PegaGrafoAD bd)
+					(PegaListaProfs bd)
 				)
-				(PegaListaProfs bd)
+				(PegaListaDiscs bd)
 			)
-			(PegaListaDiscs bd)
+			(PegaListaAlunos bd)
 		)
-		(PegaListaAlunos bd)
 	)
 )
 
