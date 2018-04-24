@@ -719,7 +719,10 @@
 ;================================================== FIM DISCIPLINAS ===========================================
 ;================================================ INICIO MATRICULADOS =========================================
 (defun Matriculados? (disciplina bd)
-	(StepMatriculados bd (PegaListaAlunos bd) disciplina)
+	(if (existe? (PegaListaDiscs bd) disciplina)
+		(StepMatriculados bd (PegaListaAlunos bd) disciplina)
+		nil
+	)
 )
 
 (defun StepMatriculados (bd alunos disciplina)
@@ -737,7 +740,10 @@
 ;================================================ FIM MATRICULADOS =========================================
 ;=============================================== INICIO VINCULADOS =========================================
 (defun Vinculados? (disciplina bd)
-	(StepVinculados bd (PegaListaProfs bd) disciplina)
+	(if (existe? (PegaListaDiscs bd) disciplina)
+		(StepVinculados bd (PegaListaProfs bd) disciplina)
+		nil
+	)
 )
 
 (defun StepVinculados (bd professores disciplina)
@@ -755,7 +761,10 @@
 ;================================================= FIM VINCULADOS ==========================================
 ;================================================== INICIO CURSA ===========================================
 (defun Cursa? (aluno bd)
-	(StepCursa bd aluno (PegaListaDiscs bd))
+	(if (existe? (PegaListaAlunos bd) aluno)
+		(StepCursa bd aluno (PegaListaDiscs bd))
+		nil
+	)
 )
 
 (defun StepCursa (bd aluno disciplinas)
@@ -773,7 +782,10 @@
 ;==================================================== FIM CURSA ============================================
 ;================================================= INICIO MINISTRA =========================================
 (defun Ministra? (professor bd)
-	(StepMinistra bd professor (PegaListaDiscs bd))
+	(if (existe? (PegaListaProfs bd) professor)
+		(StepMinistra bd professor (PegaListaDiscs bd))
+		nil
+	)
 )
 
 (defun StepMinistra (bd professor disciplinas)
@@ -791,7 +803,10 @@
 ;=================================================== FIM MINISTRA ==========================================
 ;================================================= INICIO DISC-CURSO =======================================
 (defun Disc-Curso? (disciplina bd)
-	(StepDiscCurso (PegaListaDiscs bd) disciplina (PegaListaCursos bd))
+	(if (existe? (PegaListaDiscs bd) disciplina)
+		(StepDiscCurso (PegaListaDiscs bd) disciplina (PegaListaCursos bd))
+		nil
+	)
 )
 
 (defun StepDiscCurso (listadisciplinas disciplina listacursos)
