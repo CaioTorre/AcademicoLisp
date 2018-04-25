@@ -579,7 +579,7 @@
 					disciplinasexcluidas
 				)
 			)
-			(EffDesmatricula 
+			(EffDesvincula
 				bd 
 				profs 
 				disciplinas 
